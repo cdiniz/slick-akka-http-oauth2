@@ -33,6 +33,11 @@ To run all tests (routes and persistence tests):
 
         $ sbt test
 
+#Using
+
+	curl --request POST localhost:8080/supplier -H "Content-type: application/json" --data "{\"name\" : \"sup1\",\"desc\" : \"low prices\"}"
+
+	curl localhost:8080/supplier/1
 
 #TODO
 

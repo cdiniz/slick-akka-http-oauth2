@@ -1,5 +1,5 @@
-# akka-http-slick
-The Akka Http Slick is a very simple json rest api showing one way of using akka http with [slick 3](https://github.com/slick/slick) library for database access, using cake pattern.
+# slick-akka-http
+The Slick Akka Http is a very simple json rest api showing one way of using akka http with [slick 3](https://github.com/slick/slick) library for database access.
 
 
 It supports the following features:

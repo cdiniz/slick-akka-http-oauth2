@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spray Slick Swagger</title>
+</head>
+<body>
+<div>
+    <h2>Intro</h2>
+
+    <p>The Spray Slick Swagger is a very simple rest api in Spray showing one way of using spray with slick 3 library for database access, and spray-swagger for documentation the routes in spray.
+    </p>
+
+    <p> It supports the following features:    </p>
+
+    <ul><li>    Spray-json to parse json    </li>
+        <li>    Swagger to document routes and json    </li>
+        <li>    (Removed in v0.0.2) Data access layer composed by data access Akka actors.    </li>
+        <li>    Models as case classes and slick models, independent from database driver and profile (Go slick3)    </li>
+        <li>   Multiple database types configured in properties file (h2 and postgresql for instance)    </li>
+        <li>   Cake pattern for DI    </li>
+        <li>    Routes Tested using specs2    </li>
+        <li>    Data Access Actor Tested using scalatest   </li></ul>
+    <p>   Utils:    Typesafe config for property management  and Typesafe Scala Logging (LazyLogging)    </p>
+</div>
+
+<div>
+
+    <h2>Running</h2>
+
+    <p>
+        The project was thought to be used as a seed for creating spray projects with this features, so the implementation is minimal. The model is very simple, is a supplier with a name and description.
+</p>  <p>
+    The rest api has a get and a post (json), a get for get all the suppliers, and a post to add suppliers. You should view this info in swagger with more detail.
+</p>  <p>
+    For running the project go to section run, and run it.
+</p>  <p>
+    For running the project in sbt:
+
+    <pre><code>
+    $ sbt
+    > run
+    </code>
+    </pre>
+
+
+</pre>
+</div>
+
+
+
+<div>
+    <h2>Slick 3</h2>
+    <p>Models as case classes and slick 3 schemas </p>
+
+    <pre><code> case class Supplier(id: Option[Int],name: String,desc: String) </code></pre>
+
+
+    <pre><code>class Suppliers(tag: Tag) extends Table[Supplier](tag, "SUPPLIERS") {
+      def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+      def name = column[String]("userID")
+      def desc = column[String]("last_name")
+      def * = (id.?, name, desc) <> (Supplier.tupled, Supplier.unapply)
+    }</code></pre>
+
+    <p>(Removed in v0.0.2) Data Access layer as actors instead of the usual dal classes. Class SuppliersDAA.scala (DAA stands for Data Access Actor) represents the actor for suppliers data operation.
+       The operations are represented in actor messages. For instance, for get a supplier by id, the actor has this case in the receive method:</p>
+
+    <pre><code>
+        case GetSupplierById(id) ⇒ sender ! db.run(suppliers.filter(_.id === id).result)
+    </code></pre>
+
+    <p>(v0.0.2) Data Access layer as the usual dal classes. Class SuppliersDal.scala </p>
+
+    
+    <p>The model definition is database independent. The database type is declared in application.conf, for each database. For instance, we use an h2 database in this example with the follow configuration:</p>
+    <pre><code>
+        h2db {
+          driver = "slick.driver.H2Driver$"
+          db {
+            url = "jdbc:h2:mem:test1"
+            driver = org.h2.Driver
+            keepAliveConnection = true
+            numThreads = 10
+          }
+        }
+    </code></pre>
+</div>
+
+
+
+
+<div>
+
+    <h2>Spray and swagger</h2>
+
+    <p>
+        The spray and swagger are integrated in the routes files. To integrate swagger with play, each route has to be a scala def, example:
+    </p>
+    <pre><code>
+        @ApiOperation(httpMethod = "GET", response = classOf[Supplier], value = "Returns a supplier based on ID")
+        @ApiImplicitParams(Array(
+          new ApiImplicitParam(name = "supplierId", required = true, dataType = "integer", paramType = "path", value = "ID of supplier that needs to be fetched")
+        ))
+        @ApiResponses(Array(
+        new ApiResponse(code = 200, message = "Ok")))
+        def SupplierGetRoute = path("supplier" / IntNumber) { (supId)      =>
+          get {
+            respondWithMediaType(`application/json`) {
+              onComplete((modules.suppliersDAA ? GetSupplierById(supId)).mapTo[Future[Seq[Supplier]]]) {
+                case Success(photos) => complete(photos)
+                case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+              }
+            }
+          }
+        }
+        </code>
+        </pre>
+
+    <p>For json marshalling the spray json is used with the case classes:</p>
+
+    <pre>
+        <code>
+            object JsonProtocol extends DefaultJsonProtocol {
+              implicit val supplierFormat = jsonFormat3(Supplier)
+              implicit val simpleSupplierFormat = jsonFormat2(SimpleSupplier)
+            }
+        </code>
+    </pre>
+
+
+
+</div>
+
+
+
+<div>
+    <h2>Cake Pattern</h2>
+    <p>This seed uses cake pattern to add the possibility to use alternative implementations of some modules, for instance, in tests, the seed uses an alternative implementation for persistence.
+    <p>The seed are organized in modules: ActorModule, ConfigurationModule and PersistenceModule. When we are implementing a class/actor that uses some of this dependencies, we just mix them with the modules, or put a parameter that receives the injected modules, for instance:</p>
+
+    <pre><code>
+        class RoutesActor(modules: Configuration with PersistenceModule)
+    </code></pre>
+
+</div>
+
+</body>
+</html>

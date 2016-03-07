@@ -7,7 +7,7 @@
             <pattern>%date{MM/dd HH:mm:ss} %-5level[%.15thread] %logger{1} - %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="slick.backend.DatabaseComponent.action" level="debug"/>
+    <logger name="slick.backend.DatabaseComponent.action" level="error"/>
     <logger name="slick.jdbc" level="error" />
     <logger name="slick.ast" level="error" />
     <logger name="slick.memory" level="error" />

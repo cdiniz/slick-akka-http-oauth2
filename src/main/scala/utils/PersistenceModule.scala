@@ -34,6 +34,4 @@ trait PersistenceModuleImpl extends PersistenceModule with DbModule{
 
 	override val suppliersDal = new BaseDalImpl[SuppliersTable,Supplier](TableQuery[SuppliersTable]) {}
 
-	val self = this
-
 }

@@ -39,10 +39,6 @@ To run all tests (routes and persistence tests):
 
 	curl localhost:8080/supplier/1
 
-#TODO
-
-Swagger
-
 #Credits
 
-To make this template, I just mixed the tutorials and templates, so credits for akka and slick guys.
+To make this template, I just mixed the tutorials and templates, so credits for akka and slick guys, and swagger-akka-http.

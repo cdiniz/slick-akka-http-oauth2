@@ -16,6 +16,7 @@ Utils:
 
 * Typesafe config for property management
 * Typesafe Scala Logging (LazyLogging)
+* Swagger for api documentation
 
 The project was thought to be used as an activator template.
 

@@ -23,17 +23,20 @@ class SupplierRoutes(modules: Configuration with PersistenceModule)  extends Dir
   ))
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Return Supplier", response = classOf[Supplier]),
+    new ApiResponse(code = 400, message = "The supplier id should be greater than zero"),
     new ApiResponse(code = 404, message = "Return Supplier Not Found"),
     new ApiResponse(code = 500, message = "Internal server error")
   ))
   def supplierGetRoute = path("supplier" / IntNumber) { (supId) =>
     get {
-      onComplete((modules.suppliersDal.findById(supId)).mapTo[Option[Supplier]]) {
-        case Success(supplierOpt) => supplierOpt match {
-          case Some(sup) => complete(sup)
-          case None => complete(NotFound, s"The supplier doesn't exist")
+      validate(supId > 0,"The supplier id should be greater than zero") {
+        onComplete((modules.suppliersDal.findById(supId)).mapTo[Option[Supplier]]) {
+          case Success(supplierOpt) => supplierOpt match {
+            case Some(sup) => complete(sup)
+            case None => complete(NotFound, s"The supplier doesn't exist")
+          }
+          case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
         }
-        case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
       }
     }
   }

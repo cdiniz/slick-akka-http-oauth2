@@ -21,7 +21,7 @@ trait BaseDal[T,A] {
   def createTable() : Future[Unit]
 }
 
-class BaseDalImpl[T <: BaseTable[A], A <: BaseEntity](tableQ: TableQuery[T])(implicit val db: JdbcProfile#Backend#Database,implicit val profile: JdbcProfile) extends BaseDal[T,A] with Profile with DbModule {
+class BaseDalImpl[T <: BaseTable[A], A <: BaseEntity]()(implicit val tableQ: TableQuery[T], implicit val db: JdbcProfile#Backend#Database,implicit val profile: JdbcProfile) extends BaseDal[T,A] with Profile with DbModule {
 
   import profile.api._
 

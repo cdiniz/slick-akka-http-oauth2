@@ -3,10 +3,10 @@ package rest
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, Route}
-import entities.JsonProtocol
+import persistence.entities.JsonProtocol
 import persistence.entities.{SimpleSupplier, Supplier}
 import utils.{Configuration, PersistenceModule}
-import JsonProtocol._
+import persistence.entities.JsonProtocol._
 import SprayJsonSupport._
 import scala.util.{Failure, Success}
 import io.swagger.annotations._

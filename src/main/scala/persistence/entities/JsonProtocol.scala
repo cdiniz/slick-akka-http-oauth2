@@ -1,6 +1,5 @@
-package entities
+package persistence.entities
 
-import persistence.entities.{SimpleSupplier, Supplier}
 import spray.json.DefaultJsonProtocol
 
 object JsonProtocol extends DefaultJsonProtocol {

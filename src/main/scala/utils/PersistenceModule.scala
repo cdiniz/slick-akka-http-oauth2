@@ -4,7 +4,8 @@ import akka.actor.{ActorPath, ActorSelection, Props, ActorRef}
 import persistence.dal._
 import slick.backend.DatabaseConfig
 import slick.driver.{JdbcProfile}
-import persistence.entities.{SuppliersTable, Supplier}
+import persistence.entities.SlickTables._
+import persistence.entities._
 import slick.lifted.TableQuery
 
 
@@ -19,6 +20,10 @@ trait DbModule extends Profile{
 
 trait PersistenceModule {
 	val suppliersDal: BaseDal[SuppliersTable,Supplier]
+	val accountsDal: AccountsDal
+	val oauthAuthorizationCodesDal: OAuthAuthorizationCodesDal
+	val oauthClientsDal: OAuthClientsDal
+	val oauthAccessTokensDal:  OAuthAccessTokensDal
 }
 
 
@@ -32,6 +37,10 @@ trait PersistenceModuleImpl extends PersistenceModule with DbModule{
 	override implicit val profile: JdbcProfile = dbConfig.driver
 	override implicit val db: JdbcProfile#Backend#Database = dbConfig.db
 
-	override val suppliersDal = new BaseDalImpl[SuppliersTable,Supplier](TableQuery[SuppliersTable]) {}
+	override val suppliersDal = new BaseDalImpl[SuppliersTable,Supplier]
+	override val accountsDal = new AccountsDalImpl
+	override val oauthAuthorizationCodesDal = new OAuthAuthorizationCodesDalImpl
+  override val oauthClientsDal = new OAuthClientsDalImpl(this)
+  override val oauthAccessTokensDal = new  OAuthAccessTokensDalImpl(this)
 
 }

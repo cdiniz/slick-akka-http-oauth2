@@ -1,7 +1,7 @@
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.RouteConcatenation
 import akka.stream.ActorMaterializer
-import rest.SupplierRoutes
+import rest.{OAuthRoutes, SupplierRoutes}
 import utils._
 
 object Main extends App with RouteConcatenation with CorsSupport{
@@ -17,6 +17,7 @@ object Main extends App with RouteConcatenation with CorsSupport{
 
   val bindingFuture = Http().bindAndHandle(
     new SupplierRoutes(modules).routes ~
+    new OAuthRoutes(modules).routes ~
     swaggerService.assets ~
     corsHandler(swaggerService.routes), "localhost", 8080)
 

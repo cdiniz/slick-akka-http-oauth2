@@ -2,11 +2,11 @@ package rest
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import persistence.entities.{SimpleSupplier, Supplier}
-
 import scala.concurrent.Future
 import akka.http.scaladsl.model.StatusCodes._
 import persistence.entities.JsonProtocol._
 import SprayJsonSupport._
+import akka.http.scaladsl.model.FormData
 import akka.http.scaladsl.server.ValidationRejection
 
 class RoutesSpec extends AbstractRestTest {
@@ -17,6 +17,25 @@ class RoutesSpec extends AbstractRestTest {
   val oauthRoutes = new OAuthRoutes(modules)
 
   "OAuth Routes" should {
+    "return unauthorized when trying to get a token without any credentials" in {
+      Post("/oauth/access_token") ~> oauthRoutes.routes ~> check {
+        handled shouldEqual true
+        status shouldEqual Unauthorized
+
+      }
+    }
+
+    "return Ok when trying to get a token with valid credentials" in {
+
+      modules.oauthClientsDal.validate("bob_client_id","bob_client_secret","client_credentials") returns (Future(true))
+
+      Post("/oauth/access_token",FormData("client_id" -> "bob_client_id",
+        "client_secret" -> "bob_client_secret", "grant_type" -> "client_credentials")) ~> oauthRoutes.routes ~> check {
+        handled shouldEqual true
+        status shouldEqual OK
+      }
+
+    }
 
     "return unauthorized when trying to access resources without token" in {
       Get("/resources") ~> oauthRoutes.routes ~> check {
@@ -24,14 +43,6 @@ class RoutesSpec extends AbstractRestTest {
         status shouldEqual Unauthorized
       }
     }
-
-    "return unauthorized when trying to get a token without any credentials" in {
-      Get("/oauth/access_token") ~> oauthRoutes.routes ~> check {
-        handled shouldEqual true
-        status shouldEqual Unauthorized
-      }
-    }
-
   }
 
   "Supplier Routes" should {

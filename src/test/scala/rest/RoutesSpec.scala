@@ -1,12 +1,11 @@
 package rest
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import entities.JsonProtocol
 import persistence.entities.{SimpleSupplier, Supplier}
 
 import scala.concurrent.Future
 import akka.http.scaladsl.model.StatusCodes._
-import JsonProtocol._
+import persistence.entities.JsonProtocol._
 import SprayJsonSupport._
 import akka.http.scaladsl.server.ValidationRejection
 
@@ -15,6 +14,25 @@ class RoutesSpec extends AbstractRestTest {
   def actorRefFactory = system
   val modules = new Modules {}
   val suppliers = new SupplierRoutes(modules)
+  val oauthRoutes = new OAuthRoutes(modules)
+
+  "OAuth Routes" should {
+
+    "return unauthorized when trying to access resources without token" in {
+      Get("/resources") ~> oauthRoutes.routes ~> check {
+        handled shouldEqual true
+        status shouldEqual Unauthorized
+      }
+    }
+
+    "return unauthorized when trying to get a token without any credentials" in {
+      Get("/oauth/access_token") ~> oauthRoutes.routes ~> check {
+        handled shouldEqual true
+        status shouldEqual Unauthorized
+      }
+    }
+
+  }
 
   "Supplier Routes" should {
 

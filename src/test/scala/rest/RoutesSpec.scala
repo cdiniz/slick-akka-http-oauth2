@@ -1,13 +1,18 @@
 package rest
 
+import java.sql.Timestamp
+
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import persistence.entities.{SimpleSupplier, Supplier}
+import persistence.entities.{Account, OAuthAccessToken, SimpleSupplier, Supplier}
+
 import scala.concurrent.Future
 import akka.http.scaladsl.model.StatusCodes._
 import persistence.entities.JsonProtocol._
 import SprayJsonSupport._
 import akka.http.scaladsl.model.FormData
 import akka.http.scaladsl.server.ValidationRejection
+import org.joda.time.DateTime
+import spray.json.{JsObject, JsString}
 
 class RoutesSpec extends AbstractRestTest {
 
@@ -25,14 +30,19 @@ class RoutesSpec extends AbstractRestTest {
       }
     }
 
-    "return Ok when trying to get a token with valid credentials" in {
+    "return Ok and a token when trying to get a token with valid credentials" in {
+      val bobUser = Account(1,"bobmail@gmail.com","password",new Timestamp(new DateTime().getMillis))
+      val bobToken = OAuthAccessToken(1, 1, 1, "valid token", "refresh token", new Timestamp(new DateTime().getMillis))
 
       modules.oauthClientsDal.validate("bob_client_id","bob_client_secret","client_credentials") returns (Future(true))
+      modules.oauthClientsDal.findClientCredentials("bob_client_id","bob_client_secret") returns Future(Some(bobUser))
+      modules.oauthAccessTokensDal.findByAuthorized(bobUser, "bob_client_id") returns Future(Some(bobToken))
 
       Post("/oauth/access_token",FormData("client_id" -> "bob_client_id",
         "client_secret" -> "bob_client_secret", "grant_type" -> "client_credentials")) ~> oauthRoutes.routes ~> check {
         handled shouldEqual true
         status shouldEqual OK
+        responseAs[JsObject].fields.get("token").get should be (JsString("valid token"))
       }
 
     }

@@ -3,7 +3,6 @@ package rest
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, Route}
-import persistence.entities.JsonProtocol
 import persistence.entities.{SimpleSupplier, Supplier}
 import utils.{Configuration, PersistenceModule}
 import persistence.entities.JsonProtocol._

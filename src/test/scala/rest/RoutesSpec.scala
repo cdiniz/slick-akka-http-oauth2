@@ -3,8 +3,7 @@ package rest
 import java.sql.Timestamp
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import persistence.entities.{Account, OAuthAccessToken, SimpleSupplier, Supplier}
-
+import persistence.entities._
 import scala.concurrent.Future
 import akka.http.scaladsl.model.StatusCodes._
 import persistence.entities.JsonProtocol._
@@ -12,7 +11,6 @@ import SprayJsonSupport._
 import akka.http.scaladsl.model.FormData
 import akka.http.scaladsl.server.ValidationRejection
 import org.joda.time.DateTime
-import spray.json.{JsObject, JsString}
 
 class RoutesSpec extends AbstractRestTest {
 
@@ -42,7 +40,11 @@ class RoutesSpec extends AbstractRestTest {
         "client_secret" -> "bob_client_secret", "grant_type" -> "client_credentials")) ~> oauthRoutes.routes ~> check {
         handled shouldEqual true
         status shouldEqual OK
-        responseAs[JsObject].fields.get("token").get should be (JsString("valid token"))
+        val response = responseAs[TokenResponse]
+        response.access_token shouldEqual "valid token"
+        response.refresh_token shouldEqual "refresh token"
+        response.token_type shouldEqual "Bearer"
+        response.expires_in shouldEqual 3599
       }
 
     }

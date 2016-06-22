@@ -1,6 +1,5 @@
 package rest
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, Route}
 import utils.{Configuration, PersistenceModule}
@@ -8,13 +7,15 @@ import utils.{Configuration, PersistenceModule}
 import scala.concurrent.Future
 import scalaoauth2.provider._
 import persistence.entities._
-import spray.json.{JsObject, JsString}
-
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import persistence.entities.JsonProtocol.tokenResponseFormat
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Failure
 import scala.util.Success
 
 class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Directives {
+
+
 
   val routes: Route = oauthRoute ~ protectedResourcesRoute
   val oauthDateHandler = new MyDataHandler();
@@ -23,6 +24,7 @@ class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Direct
       OAuthGrantType.CLIENT_CREDENTIALS -> new ClientCredentials()
     )
   }
+
 
   def oauthRoute = pathPrefix("oauth") {
     path("access_token") {
@@ -35,9 +37,10 @@ class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Direct
               response match {
                 case Success(maybeGrantResponse) =>
                   maybeGrantResponse.fold(oauthError => complete(Unauthorized),
-                    grantResult => complete(JsObject(
-                      "token" -> JsString(grantResult.accessToken)
-                    ))
+                    grantResult => complete(TokenResponse(grantResult.tokenType,
+                      grantResult.accessToken,
+                      grantResult.expiresIn.getOrElse(1L),
+                      grantResult.refreshToken.getOrElse("")))
                   )
                 case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
               }

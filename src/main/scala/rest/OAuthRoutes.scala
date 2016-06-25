@@ -147,7 +147,7 @@ def protectedResourcesRoute = path("resources") {
               user = account.get,
               clientId = Some(client.get.clientId),
               scope = None,
-              redirectUri = None
+              redirectUri = client.get.redirectUri
             ))
           }
         case None => Future.failed(new InvalidRequest())

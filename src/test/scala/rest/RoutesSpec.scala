@@ -80,6 +80,7 @@ class RoutesSpec extends AbstractRestTest {
       modules.oauthClientsDal.findByClientId(1) returns Future(Some(OAuthClient(1,1,"authorization_code","bob_client_id","bob_client_secret",Some("http://localhost:3000/callback"),new Timestamp(DateTime.now().getMillis))))
 
       modules.oauthAccessTokensDal.findByAuthorized(bobUser, "bob_client_id") returns Future(Some(bobToken))
+      modules.oauthAuthorizationCodesDal.delete("bob_code") returns Future.successful(1)
 
       Post("/oauth/access_token",FormData("client_id" -> "bob_client_id",
         "client_secret" -> "bob_client_secret","redirect_uri" -> "http://localhost:3000/callback", "code" -> "bob_code", "grant_type" -> "authorization_code")) ~> oauthRoutes.routes ~> check {

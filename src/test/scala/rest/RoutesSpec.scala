@@ -29,7 +29,7 @@ class RoutesSpec extends AbstractRestTest {
     }
 
     "return Ok and a token when trying to get a token with valid credentials" in {
-      val bobUser = Account(1,"bobmail@gmail.com","password",new Timestamp(new DateTime().getMillis))
+      val bobUser = Account(1,"bobmail@gmail.com","pass",new Timestamp(new DateTime().getMillis))
       val bobToken = OAuthAccessToken(1, 1, 1, "valid token", "refresh token", new Timestamp(new DateTime().getMillis))
 
       modules.oauthClientsDal.validate("bob_client_id","bob_client_secret","client_credentials") returns (Future(true))
@@ -38,6 +38,51 @@ class RoutesSpec extends AbstractRestTest {
 
       Post("/oauth/access_token",FormData("client_id" -> "bob_client_id",
         "client_secret" -> "bob_client_secret", "grant_type" -> "client_credentials")) ~> oauthRoutes.routes ~> check {
+        handled shouldEqual true
+        status shouldEqual OK
+        val response = responseAs[TokenResponse]
+        response.access_token shouldEqual "valid token"
+        response.refresh_token shouldEqual "refresh token"
+        response.token_type shouldEqual "Bearer"
+        response.expires_in shouldEqual 3599
+      }
+
+    }
+
+    "return Ok and a token when trying to get a token with valid password" in {
+      val bobUser = Account(1,"bobmail@gmail.com","pass",new Timestamp(new DateTime().getMillis))
+      val bobToken = OAuthAccessToken(1, 1, 1, "valid token", "refresh token", new Timestamp(new DateTime().getMillis))
+
+      modules.oauthClientsDal.validate("bob_client_id","bob_client_secret","password") returns (Future(true))
+      modules.accountsDal.authenticate("bobmail@gmail.com","pass") returns Future(Some(bobUser))
+      modules.oauthAccessTokensDal.findByAuthorized(bobUser, "bob_client_id") returns Future(Some(bobToken))
+
+      Post("/oauth/access_token",FormData("client_id" -> "bob_client_id",
+        "client_secret" -> "bob_client_secret","username" -> "bobmail@gmail.com", "password" -> "pass", "grant_type" -> "password")) ~> oauthRoutes.routes ~> check {
+        handled shouldEqual true
+        status shouldEqual OK
+        val response = responseAs[TokenResponse]
+        response.access_token shouldEqual "valid token"
+        response.refresh_token shouldEqual "refresh token"
+        response.token_type shouldEqual "Bearer"
+        response.expires_in shouldEqual 3599
+      }
+
+    }
+
+    "return Ok and a token when trying to get a token with valid authorization code" in {
+      val bobUser = Account(1,"bobmail@gmail.com","pass",new Timestamp(new DateTime().getMillis))
+      val bobToken = OAuthAccessToken(1, 1, 1, "valid token", "refresh token", new Timestamp(new DateTime().getMillis))
+
+      modules.oauthClientsDal.validate("bob_client_id","bob_client_secret","authorization_code") returns (Future(true))
+      modules.oauthAuthorizationCodesDal.findByCode("bob_code") returns Future(Some(OAuthAuthorizationCode(1,1,1,"bob_code",Some("http://localhost:3000/callback"),new Timestamp(DateTime.now().getMillis))))
+      modules.accountsDal.findByAccountId(1) returns Future(Some(bobUser))
+      modules.oauthClientsDal.findByClientId(1) returns Future(Some(OAuthClient(1,1,"authorization_code","bob_client_id","bob_client_secret",Some("http://localhost:3000/callback"),new Timestamp(DateTime.now().getMillis))))
+
+      modules.oauthAccessTokensDal.findByAuthorized(bobUser, "bob_client_id") returns Future(Some(bobToken))
+
+      Post("/oauth/access_token",FormData("client_id" -> "bob_client_id",
+        "client_secret" -> "bob_client_secret","redirect_uri" -> "http://localhost:3000/callback", "code" -> "bob_code", "grant_type" -> "authorization_code")) ~> oauthRoutes.routes ~> check {
         handled shouldEqual true
         status shouldEqual OK
         val response = responseAs[TokenResponse]

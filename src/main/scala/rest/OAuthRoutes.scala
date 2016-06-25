@@ -21,7 +21,9 @@ class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Direct
   val oauthDateHandler = new MyDataHandler();
   val tokenEndpoint = new TokenEndpoint {
     override val handlers = Map(
-      OAuthGrantType.CLIENT_CREDENTIALS -> new ClientCredentials()
+      OAuthGrantType.CLIENT_CREDENTIALS -> new ClientCredentials,
+      OAuthGrantType.PASSWORD -> new Password,
+      OAuthGrantType.AUTHORIZATION_CODE -> new AuthorizationCode
     )
   }
 
@@ -138,8 +140,8 @@ def protectedResourcesRoute = path("resources") {
       modules.oauthAuthorizationCodesDal.findByCode(code).flatMap {
         case Some(code) =>
           for {
-            account <- modules.accountsDal.findById(code.accountId)
-            client <- modules.oauthClientsDal.findById(code.oauthClientId)
+            account <- modules.accountsDal.findByAccountId(code.accountId)
+            client <- modules.oauthClientsDal.findByClientId(code.oauthClientId)
           } yield {
             Some(AuthInfo(
               user = account.get,

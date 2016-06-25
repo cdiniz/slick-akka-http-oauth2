@@ -12,6 +12,7 @@ import slick.driver.JdbcProfile
 
 trait AccountsDal extends BaseDalImpl[AccountsTable,Account] {
   def authenticate(email: String, password: String): Future[Option[Account]]
+  def findByAccountId(id : Long) : Future[Option[Account]] = findById(id)
 }
 
 class AccountsDalImpl()(implicit override val db: JdbcProfile#Backend#Database) extends AccountsDal {

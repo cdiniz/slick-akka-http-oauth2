@@ -13,6 +13,7 @@ import scala.concurrent.Future
 trait OAuthClientsDal extends BaseDalImpl[OauthClientTable,OAuthClient]{
   def validate(clientId: String, clientSecret: String, grantType: String): Future[Boolean]
   def findByClientId(clientId: String): Future[Option[OAuthClient]]
+  def findByClientId(clientId: Long): Future[Option[OAuthClient]] = findById(clientId)
   def findClientCredentials(clientId: String, clientSecret: String): Future[Option[Account]]
 }
 

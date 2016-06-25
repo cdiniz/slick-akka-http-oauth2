@@ -23,7 +23,8 @@ class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Direct
     override val handlers = Map(
       OAuthGrantType.CLIENT_CREDENTIALS -> new ClientCredentials,
       OAuthGrantType.PASSWORD -> new Password,
-      OAuthGrantType.AUTHORIZATION_CODE -> new AuthorizationCode
+      OAuthGrantType.AUTHORIZATION_CODE -> new AuthorizationCode,
+      OAuthGrantType.REFRESH_TOKEN -> new RefreshToken
     )
   }
 
@@ -114,14 +115,14 @@ def protectedResourcesRoute = path("resources") {
       modules.oauthAccessTokensDal.findByRefreshToken(refreshToken).flatMap {
         case Some(accessToken) =>
           for {
-            account <- modules.accountsDal.findById(accessToken.accountId)
-            client <- modules.oauthClientsDal.findById(accessToken.oauthClientId)
+            account <- modules.accountsDal.findByAccountId(accessToken.accountId)
+            client <- modules.oauthClientsDal.findByClientId(accessToken.oauthClientId)
           } yield {
             Some(AuthInfo(
               user = account.get,
               clientId = Some(client.get.clientId),
               scope = None,
-              redirectUri = None
+              redirectUri = client.get.redirectUri
             ))
           }
         case None => Future.failed(new InvalidRequest())
@@ -170,7 +171,7 @@ def protectedResourcesRoute = path("resources") {
               user = account.get,
               clientId = Some(client.get.clientId),
               scope = None,
-              redirectUri = None
+              redirectUri = client.get.redirectUri
             ))
           }
         case None => Future.failed(new InvalidRequest())

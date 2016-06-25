@@ -95,6 +95,28 @@ class RoutesSpec extends AbstractRestTest {
 
     }
 
+    "return new token after refresh" in {
+      val bobUser = Account(1,"bobmail@gmail.com","pass",new Timestamp(new DateTime().getMillis))
+      val bobClient = OAuthClient(1,1,"authorization_code","bob_client_id","bob_client_secret",Some("http://localhost:3000/callback"),new Timestamp(DateTime.now().getMillis))
+      val bobToken = OAuthAccessToken(1, 1, 1, "valid token", "refresh token", new Timestamp(new DateTime().getMillis))
+
+      modules.oauthAccessTokensDal.findByRefreshToken("refresh_token")
+      modules.accountsDal.findByAccountId(1) returns Future(Some(bobUser))
+      modules.oauthClientsDal.findByClientId(1) returns Future(Some(bobClient))
+      modules.oauthAccessTokensDal.refresh(bobUser, bobClient) returns Future(bobToken)
+
+      Post("/oauth/access_token",FormData("client_id" -> "bob_client_id", "client_secret" -> "bob_client_secret",
+      "refresh_token" -> "refresh token", "grant_type" -> "refresh_token")) ~> oauthRoutes.routes ~> check {
+        handled shouldEqual true
+        status shouldEqual OK
+        val response = responseAs[TokenResponse]
+        response.access_token shouldEqual "valid token"
+        response.refresh_token shouldEqual "refresh token"
+        response.token_type shouldEqual "Bearer"
+        response.expires_in shouldEqual 3599
+      }
+    }
+
     "return unauthorized when trying to access resources without token" in {
       Get("/resources") ~> oauthRoutes.routes ~> check {
         handled shouldEqual true

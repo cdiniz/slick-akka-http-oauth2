@@ -4,11 +4,13 @@ import java.sql.Timestamp
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import persistence.entities._
+
 import scala.concurrent.Future
 import akka.http.scaladsl.model.StatusCodes._
 import persistence.entities.JsonProtocol._
 import SprayJsonSupport._
-import akka.http.scaladsl.model.FormData
+import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken, RawHeader}
+import akka.http.scaladsl.model.{FormData, HttpEntity, HttpHeader}
 import akka.http.scaladsl.server.ValidationRejection
 import org.joda.time.DateTime
 
@@ -100,9 +102,11 @@ class RoutesSpec extends AbstractRestTest {
       val bobClient = OAuthClient(1,1,"authorization_code","bob_client_id","bob_client_secret",Some("http://localhost:3000/callback"),new Timestamp(DateTime.now().getMillis))
       val bobToken = OAuthAccessToken(1, 1, 1, "valid token", "refresh token", new Timestamp(new DateTime().getMillis))
 
-      modules.oauthAccessTokensDal.findByRefreshToken("refresh_token")
+      modules.oauthClientsDal.validate("bob_client_id","bob_client_secret","refresh_token") returns (Future(true))
+      modules.oauthAccessTokensDal.findByRefreshToken("refresh token") returns Future(Some(bobToken))
       modules.accountsDal.findByAccountId(1) returns Future(Some(bobUser))
       modules.oauthClientsDal.findByClientId(1) returns Future(Some(bobClient))
+      modules.oauthClientsDal.findByClientId("bob_client_id") returns Future(Some(bobClient))
       modules.oauthAccessTokensDal.refresh(bobUser, bobClient) returns Future(bobToken)
 
       Post("/oauth/access_token",FormData("client_id" -> "bob_client_id", "client_secret" -> "bob_client_secret",
@@ -117,12 +121,34 @@ class RoutesSpec extends AbstractRestTest {
       }
     }
 
-    "return unauthorized when trying to access resources without token" in {
+    "handle when trying to access resources without token" in {
+      modules.oauthAccessTokensDal.findByAccessToken("") returns Future(None)
+
       Get("/resources") ~> oauthRoutes.routes ~> check {
+        handled shouldEqual false
+      }
+    }
+
+    "return unauthorized when trying to access resources without token" in {
+      modules.oauthAccessTokensDal.findByAccessToken("invalid") returns Future(None)
+
+      Get("/resources").addHeader(Authorization(OAuth2BearerToken("invalid"))) ~> oauthRoutes.routes ~> check {
         handled shouldEqual true
         status shouldEqual Unauthorized
       }
     }
+
+    "return authorized when trying to access resources with a valid token" in {
+      val bobToken = OAuthAccessToken(1, 1, 1, "valid token", "refresh token", new Timestamp(new DateTime().getMillis))
+
+      modules.oauthAccessTokensDal.findByAccessToken("valid_token") returns Future(Some(bobToken))
+
+      Get("/resources",HttpEntity("Application/json")).addHeader(Authorization(OAuth2BearerToken("valid_token"))) ~> oauthRoutes.routes ~> check {
+        handled shouldEqual true
+        status shouldEqual OK
+      }
+    }
+
   }
 
   "Supplier Routes" should {

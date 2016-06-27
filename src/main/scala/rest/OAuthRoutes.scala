@@ -8,7 +8,9 @@ import scala.concurrent.Future
 import scalaoauth2.provider._
 import persistence.entities._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.headers.Authorization
 import persistence.entities.JsonProtocol.tokenResponseFormat
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Failure
 import scala.util.Success
@@ -16,9 +18,8 @@ import scala.util.Success
 class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Directives {
 
 
-
   val routes: Route = oauthRoute ~ protectedResourcesRoute
-  val oauthDateHandler = new MyDataHandler();
+  val oauthDateHandler = new MyDataHandler;
   val tokenEndpoint = new TokenEndpoint {
     override val handlers = Map(
       OAuthGrantType.CLIENT_CREDENTIALS -> new ClientCredentials,
@@ -34,7 +35,7 @@ class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Direct
       post {
         formFieldMap { fields =>
           onComplete((tokenEndpoint.handleRequest(
-            new AuthorizationRequest(Map(),fields.map(m => m._1 -> Seq(m._2))),oauthDateHandler)
+            new AuthorizationRequest(Map(), fields.map(m => m._1 -> Seq(m._2))), oauthDateHandler)
             )) {
             response =>
               response match {
@@ -54,11 +55,20 @@ class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Direct
   }
 
 
-def protectedResourcesRoute = path("resources") {
-  get {
-  complete(Unauthorized)
-}
-}
+  def protectedResourcesRoute = path("resources") {
+    get {
+      headerValueByType[Authorization](){ header =>
+      onComplete(oauthDateHandler.findAccessToken(header.credentials.token())) {
+        response => response match {
+          case Success(maybeAuth) => maybeAuth.fold(complete(Unauthorized)){ x => complete(OK)}
+          case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+        }
+      }
+      }
+    }
+  }
+
+
 
 
   class MyDataHandler extends DataHandler[Account] {

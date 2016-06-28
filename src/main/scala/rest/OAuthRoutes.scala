@@ -58,12 +58,16 @@ class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Direct
   def protectedResourcesRoute = path("resources") {
     get {
       headerValueByType[Authorization](){ header =>
-      onComplete(oauthDateHandler.findAccessToken(header.credentials.token())) {
-        response => response match {
-          case Success(maybeAuth) => maybeAuth.fold(complete(Unauthorized)){ x => complete(OK)}
-          case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+        onComplete(oauthDateHandler.findAccessToken(header.credentials.token()).flatMap{ maybeToken =>
+          maybeToken match {
+          case Some(token) => oauthDateHandler.findAuthInfoByAccessToken(token)
+          case None => Future.successful(None)
+        }}) {
+          response => response match {
+            case Success(maybeAuth) => maybeAuth.fold(complete(Unauthorized)){ auth => complete(OK,s"Hello ${auth.clientId.getOrElse("")}")}
+            case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+          }
         }
-      }
       }
     }
   }
@@ -174,8 +178,8 @@ class OAuthRoutes(modules: Configuration with PersistenceModule)  extends Direct
       modules.oauthAccessTokensDal.findByAccessToken(accessToken.token).flatMap {
         case Some(accessToken) =>
           for {
-            account <- modules.accountsDal.findById(accessToken.accountId)
-            client <- modules.oauthClientsDal.findById(accessToken.oauthClientId)
+            account <- modules.accountsDal.findByAccountId(accessToken.accountId)
+            client <- modules.oauthClientsDal.findByClientId(accessToken.oauthClientId)
           } yield {
             Some(AuthInfo(
               user = account.get,

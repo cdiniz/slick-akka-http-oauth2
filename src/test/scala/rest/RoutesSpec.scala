@@ -121,7 +121,7 @@ class RoutesSpec extends AbstractRestTest {
       }
     }
 
-    "handle when trying to access resources without token" in {
+    "don't handle when trying to access resources without token" in {
       modules.oauthAccessTokensDal.findByAccessToken("") returns Future(None)
 
       Get("/resources") ~> oauthRoutes.routes ~> check {
@@ -140,12 +140,18 @@ class RoutesSpec extends AbstractRestTest {
 
     "return authorized when trying to access resources with a valid token" in {
       val bobToken = OAuthAccessToken(1, 1, 1, "valid token", "refresh token", new Timestamp(new DateTime().getMillis))
+      val bobUser = Account(1,"bobmail@gmail.com","pass",new Timestamp(new DateTime().getMillis))
+      val bobClient = OAuthClient(1,1,"authorization_code","bob_client_id","bob_client_secret",Some("http://localhost:3000/callback"),new Timestamp(DateTime.now().getMillis))
 
-      modules.oauthAccessTokensDal.findByAccessToken("valid_token") returns Future(Some(bobToken))
+      modules.oauthAccessTokensDal.findByAccessToken("valid token") returns Future(Some(bobToken))
 
-      Get("/resources",HttpEntity("Application/json")).addHeader(Authorization(OAuth2BearerToken("valid_token"))) ~> oauthRoutes.routes ~> check {
+      modules.accountsDal.findByAccountId(1) returns Future(Some(bobUser))
+      modules.oauthClientsDal.findByClientId(1) returns Future(Some(bobClient))
+
+      Get("/resources",HttpEntity("Application/json")).addHeader(Authorization(OAuth2BearerToken("valid token"))) ~> oauthRoutes.routes ~> check {
         handled shouldEqual true
         status shouldEqual OK
+        responseAs[String] should equal("Hello bob_client_id")
       }
     }
 

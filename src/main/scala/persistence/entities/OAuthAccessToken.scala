@@ -2,8 +2,9 @@ package persistence.entities
 
 import java.sql.Timestamp
 
-case class OAuthAccessToken(
-                             id: Long,
+import scalaoauth2.provider.GrantHandlerResult
+
+case class OAuthAccessToken( id: Long,
                              accountId: Long,
                              oauthClientId: Long,
                              accessToken: String,

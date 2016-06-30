@@ -110,7 +110,7 @@ class RoutesSpec extends AbstractRestTest {
       modules.oauthAccessTokensDal.refresh(bobUser, bobClient) returns Future(bobToken)
 
       Post("/oauth/access_token",FormData("client_id" -> "bob_client_id", "client_secret" -> "bob_client_secret",
-      "refresh_token" -> "refresh token", "grant_type" -> "refresh_token")) ~> oauthRoutes.routes ~> check {
+        "refresh_token" -> "refresh token", "grant_type" -> "refresh_token")) ~> oauthRoutes.routes ~> check {
         handled shouldEqual true
         status shouldEqual OK
         val response = responseAs[TokenResponse]
@@ -133,8 +133,7 @@ class RoutesSpec extends AbstractRestTest {
       modules.oauthAccessTokensDal.findByAccessToken("invalid") returns Future(None)
 
       Get("/resources").addHeader(Authorization(OAuth2BearerToken("invalid"))) ~> oauthRoutes.routes ~> check {
-        handled shouldEqual true
-        status shouldEqual Unauthorized
+        handled shouldEqual false
       }
     }
 
@@ -160,7 +159,7 @@ class RoutesSpec extends AbstractRestTest {
   "Supplier Routes" should {
 
     "return an empty array of suppliers" in {
-     modules.suppliersDal.findById(1) returns Future(None)
+      modules.suppliersDal.findById(1) returns Future(None)
 
       Get("/supplier/1") ~> suppliers.routes ~> check {
         handled shouldEqual true

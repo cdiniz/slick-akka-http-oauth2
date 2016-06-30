@@ -3,16 +3,17 @@ package rest
 import java.sql.Timestamp
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import persistence.entities._
-
-import scala.concurrent.Future
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes._
-import persistence.entities.JsonProtocol._
-import SprayJsonSupport._
-import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken, RawHeader}
-import akka.http.scaladsl.model.{FormData, HttpEntity, HttpHeader}
+import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
+import akka.http.scaladsl.model.{FormData, HttpEntity}
 import akka.http.scaladsl.server.ValidationRejection
 import org.joda.time.DateTime
+import persistence.entities.JsonProtocol._
+import persistence.entities._
+import rest.OAuth2RouteProvider.TokenResponse
+
+import scala.concurrent.Future
 
 class RoutesSpec extends AbstractRestTest {
 

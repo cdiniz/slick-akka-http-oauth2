@@ -1,17 +1,16 @@
-package persistence.dal
+package persistence.dals
 
 import java.security.SecureRandom
 import java.sql.Timestamp
 
 import org.joda.time.DateTime
-import persistence.entities.{Account, OAuthAccessToken, OAuthClient}
 import persistence.entities.SlickTables.OauthAccessTokenTable
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import persistence.entities.{Account, OAuthAccessToken, OAuthClient}
 import slick.driver.H2Driver.api._
 import slick.driver.JdbcProfile
 import utils.{Configuration, PersistenceModule}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
 

@@ -1,12 +1,13 @@
-package persistence.dal
+package persistence.dals
 
-import persistence.entities.{Supplier}
+import akka.util.Timeout
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import persistence.entities.Supplier
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import akka.util.Timeout
 
 
 @RunWith(classOf[JUnitRunner])

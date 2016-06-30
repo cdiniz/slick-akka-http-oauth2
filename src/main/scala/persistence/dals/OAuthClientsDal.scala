@@ -1,12 +1,12 @@
-package persistence.dal
+package persistence.dals
 
-import persistence.entities.{Account, OAuthClient}
 import persistence.entities.SlickTables.OauthClientTable
-import scala.concurrent.ExecutionContext.Implicits.global
-import utils.{Configuration, PersistenceModule}
+import persistence.entities.{Account, OAuthClient}
 import slick.driver.H2Driver.api._
 import slick.driver.JdbcProfile
+import utils.{Configuration, PersistenceModule}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 

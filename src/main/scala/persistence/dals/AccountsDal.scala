@@ -1,14 +1,14 @@
-package persistence.dal
+package persistence.dals
 
 import java.security.MessageDigest
 
-import persistence.entities.SlickTables.AccountsTable
 import persistence.entities.Account
+import persistence.entities.SlickTables.AccountsTable
 import slick.driver.H2Driver.api._
-
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import slick.driver.JdbcProfile
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 trait AccountsDal extends BaseDalImpl[AccountsTable,Account] {
   def authenticate(email: String, password: String): Future[Option[Account]]

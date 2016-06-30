@@ -1,12 +1,13 @@
-package persistence.dal
+package persistence.dals
 
-import persistence.entities.{BaseTable, BaseEntity}
+import persistence.entities.{BaseEntity, BaseTable}
 import slick.driver.H2Driver.api._
 import slick.driver.JdbcProfile
-import slick.lifted.{Tag, CanBeQueryCondition}
+import slick.lifted.CanBeQueryCondition
 import utils.{DbModule, Profile}
-import scala.concurrent.Future
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 trait BaseDal[T,A] {
   def insert(row : A): Future[Long]

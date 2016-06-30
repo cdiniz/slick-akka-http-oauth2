@@ -1,14 +1,13 @@
-package persistence.dal
+package persistence.dals
 
 
-import akka.actor.{ActorSystem, Props}
-import persistence.entities.Supplier
-import slick.backend.DatabaseConfig
-import slick.driver.JdbcProfile
-import slick.lifted.TableQuery
-import utils._
 import org.scalatest.{FunSuite, Suite}
 import persistence.entities.SlickTables.SuppliersTable
+import persistence.entities.Supplier
+import persitence.handlers.OAuth2DataHandler
+import slick.backend.DatabaseConfig
+import slick.driver.JdbcProfile
+import utils._
 
 trait AbstractPersistenceTest extends FunSuite {  this: Suite =>
 
@@ -30,6 +29,7 @@ trait AbstractPersistenceTest extends FunSuite {  this: Suite =>
     override val oauthAuthorizationCodesDal = new OAuthAuthorizationCodesDalImpl
     override val oauthClientsDal = new OAuthClientsDalImpl(this)
     override val oauthAccessTokensDal = new  OAuthAccessTokensDalImpl(this)
+    override val oauth2DataHandler = new OAuth2DataHandler(this)
 
     val self = this
 

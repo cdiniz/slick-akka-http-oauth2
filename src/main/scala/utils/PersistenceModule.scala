@@ -1,12 +1,13 @@
 package utils
 
-import akka.actor.{ActorPath, ActorSelection, Props, ActorRef}
-import persistence.dal._
-import slick.backend.DatabaseConfig
-import slick.driver.{JdbcProfile}
+import persistence.dals._
 import persistence.entities.SlickTables._
 import persistence.entities._
-import slick.lifted.TableQuery
+import persitence.handlers.OAuth2DataHandler
+import slick.backend.DatabaseConfig
+import slick.driver.JdbcProfile
+
+import scalaoauth2.provider.DataHandler
 
 
 trait Profile {
@@ -24,6 +25,7 @@ trait PersistenceModule {
 	val oauthAuthorizationCodesDal: OAuthAuthorizationCodesDal
 	val oauthClientsDal: OAuthClientsDal
 	val oauthAccessTokensDal:  OAuthAccessTokensDal
+	val oauth2DataHandler : DataHandler[Account]
 }
 
 
@@ -42,5 +44,5 @@ trait PersistenceModuleImpl extends PersistenceModule with DbModule{
 	override val oauthAuthorizationCodesDal = new OAuthAuthorizationCodesDalImpl
   override val oauthClientsDal = new OAuthClientsDalImpl(this)
   override val oauthAccessTokensDal = new  OAuthAccessTokensDalImpl(this)
-
+	override val oauth2DataHandler = new OAuth2DataHandler(this)
 }

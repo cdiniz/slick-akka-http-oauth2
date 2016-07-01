@@ -5,8 +5,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{Matchers, WordSpec}
 import org.specs2.mock.Mockito
 import persistence.dals._
-import persistence.entities.SlickTables.SuppliersTable
-import persistence.entities.Supplier
 import persitence.handlers.OAuth2DataHandler
 import utils.{ActorModule, ConfigurationModuleImpl, PersistenceModule}
 
@@ -15,7 +13,6 @@ trait AbstractRestTest  extends WordSpec with Matchers with ScalatestRouteTest w
   trait Modules extends ConfigurationModuleImpl with ActorModule with PersistenceModule {
     val system = AbstractRestTest.this.system
 
-    override val suppliersDal = mock[BaseDal[SuppliersTable,Supplier]]
     override val accountsDal =  mock[AccountsDal]
     override val oauthAuthorizationCodesDal = mock[OAuthAuthorizationCodesDal]
     override val oauthClientsDal = mock[OAuthClientsDal]

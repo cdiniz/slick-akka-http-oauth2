@@ -7,10 +7,10 @@
 <div>
     <h2>Intro</h2>
 
-    <p>The Slick Akka Http is a very simple json rest api showing one way of using akka http with slick 3 library for database access.
+    <p>The Slick Akka Http Oauth2 shows one way to integrate scala-oauth2 with akka http.
     </p>
 
-    <p> It supports the following features:    </p>
+    <p> This template is based on my other template slick-akka-http which supports the following features:    </p>
 
     <ul><li>   Generic Data Access layer, create a DAL with crud for an entity with just one line    </li>
         <li>   Models as case classes and slick models, independent from database driver and profile    </li>
@@ -96,7 +96,7 @@
     <p>The generic DAL is used in suppliers DAL as example:</p>
 
     <pre><code>
-        	override val suppliersDal = new BaseDalImpl[SuppliersTable,Supplier](TableQuery[SuppliersTable]) {}
+        	override val accountsDal = new BaseDalImpl[AccountsTable,Account](TableQuery[AccountsTable]) {}
     </code></pre>
 
 </div>

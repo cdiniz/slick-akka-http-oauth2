@@ -1,7 +1,6 @@
 package utils
 
 import persistence.dals._
-import persistence.entities.SlickTables._
 import persistence.entities._
 import persitence.handlers.OAuth2DataHandler
 import slick.backend.DatabaseConfig
@@ -20,7 +19,6 @@ trait DbModule extends Profile{
 }
 
 trait PersistenceModule {
-	val suppliersDal: BaseDal[SuppliersTable,Supplier]
 	val accountsDal: AccountsDal
 	val oauthAuthorizationCodesDal: OAuthAuthorizationCodesDal
 	val oauthClientsDal: OAuthClientsDal
@@ -39,7 +37,6 @@ trait PersistenceModuleImpl extends PersistenceModule with DbModule{
 	override implicit val profile: JdbcProfile = dbConfig.driver
 	override implicit val db: JdbcProfile#Backend#Database = dbConfig.db
 
-	override val suppliersDal = new BaseDalImpl[SuppliersTable,Supplier]
 	override val accountsDal = new AccountsDalImpl
 	override val oauthAuthorizationCodesDal = new OAuthAuthorizationCodesDalImpl
   override val oauthClientsDal = new OAuthClientsDalImpl(this)

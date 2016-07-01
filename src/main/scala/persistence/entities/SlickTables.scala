@@ -3,14 +3,6 @@ package persistence.entities
 import slick.driver.H2Driver.api._
 
 object SlickTables {
-	
-  class SuppliersTable(tag: Tag) extends BaseTable[Supplier](tag, "SUPPLIERS") {
-    def name = column[String]("userID")
-    def desc = column[String]("last_name")
-    def * = (id, name, desc) <> (Supplier.tupled, Supplier.unapply)
- }
-
- implicit val supplisersTableQ : TableQuery[SuppliersTable] = TableQuery[SuppliersTable]
 
   class AccountsTable(tag : Tag) extends BaseTable[Account](tag, "accounts") {
     def email = column[String]("email")

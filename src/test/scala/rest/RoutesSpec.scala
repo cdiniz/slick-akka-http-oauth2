@@ -2,14 +2,11 @@ package rest
 
 import java.sql.Timestamp
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.model.{FormData, HttpEntity}
-import akka.http.scaladsl.server.ValidationRejection
 import org.joda.time.DateTime
-import persistence.entities.JsonProtocol._
 import persistence.entities._
 import rest.OAuth2RouteProvider.TokenResponse
 
@@ -19,7 +16,6 @@ class RoutesSpec extends AbstractRestTest {
 
   def actorRefFactory = system
   val modules = new Modules {}
-  val suppliers = new SupplierRoutes(modules)
   val oauthRoutes = new OAuthRoutes(modules)
 
   "OAuth Routes" should {
@@ -152,55 +148,6 @@ class RoutesSpec extends AbstractRestTest {
         handled shouldEqual true
         status shouldEqual OK
         responseAs[String] should equal("Hello bob_client_id")
-      }
-    }
-
-  }
-
-  "Supplier Routes" should {
-
-    "return an empty array of suppliers" in {
-      modules.suppliersDal.findById(1) returns Future(None)
-
-      Get("/supplier/1") ~> suppliers.routes ~> check {
-        handled shouldEqual true
-        status shouldEqual NotFound
-      }
-    }
-
-    "return an empty array of suppliers when ask for supplier Bad Request when the supplier is < 1" in {
-      Get("/supplier/0") ~> suppliers.routes ~> check {
-        handled shouldEqual false
-        rejection shouldEqual ValidationRejection("The supplier id should be greater than zero", None)
-      }
-    }
-
-    "return an array with 1 suppliers" in {
-      modules.suppliersDal.findById(1) returns Future(Some(Supplier(1,"name 1", "desc 1")))
-      Get("/supplier/1") ~> suppliers.routes ~> check {
-        handled shouldEqual true
-        status shouldEqual OK
-        responseAs[Option[Supplier]].isEmpty shouldEqual false
-      }
-    }
-
-    "create a supplier with the json in post" in {
-      modules.suppliersDal.insert(Supplier(0,"name 1","desc 1")) returns  Future(1)
-      Post("/supplier",SimpleSupplier("name 1","desc 1")) ~> suppliers.routes ~> check {
-        handled shouldEqual true
-        status shouldEqual Created
-      }
-    }
-
-    "not handle the invalid json" in {
-      Post("/supplier","{\"name\":\"1\"}") ~> suppliers.routes ~> check {
-        handled shouldEqual false
-      }
-    }
-
-    "not handle an empty post" in {
-      Post("/supplier") ~> suppliers.routes ~> check {
-        handled shouldEqual false
       }
     }
 

@@ -24,6 +24,7 @@ trait PersistenceModule {
 	val oauthClientsDal: OAuthClientsDal
 	val oauthAccessTokensDal:  OAuthAccessTokensDal
 	val oauth2DataHandler : DataHandler[Account]
+	def generateDDL : Unit
 }
 
 
@@ -42,4 +43,12 @@ trait PersistenceModuleImpl extends PersistenceModule with DbModule{
   override val oauthClientsDal = new OAuthClientsDalImpl(this)
   override val oauthAccessTokensDal = new  OAuthAccessTokensDalImpl(this)
 	override val oauth2DataHandler = new OAuth2DataHandler(this)
+
+	override def generateDDL(): Unit = {
+		accountsDal.createTable()
+		oauthAccessTokensDal.createTable()
+		oauthAuthorizationCodesDal.createTable()
+		oauthClientsDal.createTable()
+	}
+
 }

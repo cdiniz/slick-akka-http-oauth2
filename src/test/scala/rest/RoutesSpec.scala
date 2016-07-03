@@ -15,7 +15,9 @@ import scala.concurrent.Future
 class RoutesSpec extends AbstractRestTest {
 
   def actorRefFactory = system
-  val modules = new Modules {}
+  val modules = new Modules {
+    override def generateDDL: Unit = {}
+  }
   val oauthRoutes = new OAuthRoutes(modules)
 
   "OAuth Routes" should {

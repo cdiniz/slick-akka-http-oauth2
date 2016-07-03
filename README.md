@@ -51,5 +51,4 @@ Hello bob_client_id
 There are examples in tests for getting tokens with authorization code and user password.
 
 ##TODO
-
-Testing Dals
+I did TDD to make the upper layer, but since I imported the dals from my play-slick-oauth2 template, the unit tests for dals are still TODO.

@@ -40,8 +40,8 @@ trait PersistenceModuleImpl extends PersistenceModule with DbModule{
 
 	override val accountsDal = new AccountsDalImpl
 	override val oauthAuthorizationCodesDal = new OAuthAuthorizationCodesDalImpl
-  override val oauthClientsDal = new OAuthClientsDalImpl(this)
-  override val oauthAccessTokensDal = new  OAuthAccessTokensDalImpl(this)
+        override val oauthClientsDal = new OAuthClientsDalImpl(this)
+        override val oauthAccessTokensDal = new  OAuthAccessTokensDalImpl(this)
 	override val oauth2DataHandler = new OAuth2DataHandler(this)
 
 	override def generateDDL(): Unit = {

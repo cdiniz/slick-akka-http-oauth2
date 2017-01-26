@@ -63,7 +63,7 @@ object SlickTables {
     def oauthClient = foreignKey(
       "oauth_access_token_client_fk",
       oauthClientId,
-      OauthAuthorizationCodeTableQ)(_.id)
+      OauthClientTableQ)(_.id)
 
   }
 
